@@ -130,7 +130,7 @@ $row = $result->fetch_assoc();
     <textarea name="obs_pokemon" rows="4"><?= htmlspecialchars($row['obs_pokemon']) ?></textarea>
 
     <button type="submit">Salvar Alterações</button>
-    <a href="listar_pokemon.php">Cancelar</a>
+    <a href="index.php">Cancelar</a>
 </form>
 
 </body>
