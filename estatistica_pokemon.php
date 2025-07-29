@@ -197,7 +197,7 @@ body {
         <div class="navbar-buttons">
             <a href="estatistica_pokemon.php">Estatísticas</a>
             <a href="pesquisa.php">Listar</a>
-            <a href="lista_pokemon.php">Cadastrar</a>
+            <a href="cadastro.php">Cadastrar</a>
         </div>
     </div>
 

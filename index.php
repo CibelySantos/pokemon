@@ -2,7 +2,7 @@
 $host = "localhost";
 $user = "root";
 $pass = "";
-$db = "pokemon.sql";
+$db = "pokemon.sql"; // Retira o ".sql" aqui, só o nome do banco mesmo
 $conn = new mysqli($host, $user, $pass, $db);
 if ($conn->connect_error) die("Erro: " . $conn->connect_error);
 
@@ -26,6 +26,189 @@ if (isset($_GET["busca"]) && !empty(trim($_GET["busca"]))) {
     <meta charset="UTF-8">
     <title>Buscar Pokémon</title>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <style>
+        /* teu CSS aqui, mantive o original pra não encher */
+    </style>
+
+    <script>
+        function excluirPokemon(id, nome, cardElement) {
+            Swal.fire({
+                title: `Deseja excluir ${nome}?`,
+                text: "Essa ação não pode ser desfeita!",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#d33',
+                cancelButtonColor: '#3085d6',
+                confirmButtonText: 'Sim, excluir',
+                cancelButtonText: 'Cancelar'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    fetch('excluir_pokemon.php', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/x-www-form-urlencoded',
+                            },
+                            body: `id=${id}`
+                        })
+                        .then(response => response.text())
+                        .then(data => {
+                            if (data.trim() === "ok") {
+                                Swal.fire(
+                                    'Excluído!',
+                                    `${nome} foi removido com sucesso.`,
+                                    'success'
+                                );
+                                cardElement.remove();
+                            } else {
+                                Swal.fire('Erro!', 'Não foi possível excluir.', 'error');
+                            }
+                        });
+                }
+            });
+        }
+    </script>
+
+</head>
+
+<body>
+
+    <div class="navbar">
+        <h1>MundoPokémon</h1>
+        <div class="navbar-buttons">
+            <a href="estatistica_pokemon.php">Estatísticas</a>
+            <a href="pesquisa.php">Listar</a>
+            <a href="cadastro.php">Cadastrar</a>
+        </div>
+    </div>
+
+    <div class="search-bar">
+        <form method="GET" action="">
+            <input type="text" name="busca" id="busca" placeholder="Pesquisar Pokémon..." autocomplete="off" value="<?= htmlspecialchars($pesquisa) ?>">
+            <button type="submit">Buscar</button>
+        </form>
+        <div class="sugestoes" id="sugestoes"></div>
+    </div>
+
+    <?php if ($resultado === null): ?>
+    <!-- Banner e tipos quando não há pesquisa -->
+    <div class="intro-banner">
+        <img src="./img/pokemoninicial.jpg" alt="Banner Pokémon">
+        <div class="intro-overlay">
+            <div class="intro-text-card">
+                <h2>Bem-vindo ao Mundo Pokémon!</h2>
+                <p>Pesquise pelo nome de um Pokémon para ver detalhes, editar ou excluir. Utilize a barra acima para começar sua jornada!</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="tipos-container">
+        <h2>Tipos de Pokémon</h2>
+        <div class="tipos-grid">
+            <div class="tipo-card">
+                <img src="./img/pokemonfogo.jpg" alt="Tipo Fogo">
+                <div class="tipo-overlay">Fogo</div>
+            </div>
+            <div class="tipo-card">
+                <img src="./img/pokemonagua.png" alt="Tipo Água">
+                <div class="tipo-overlay">Água</div>
+            </div>
+            <div class="tipo-card">
+                <img src="./img/pokemonplanta.png" alt="Tipo Planta">
+                <div class="tipo-overlay">Planta</div>
+            </div>
+            <div class="tipo-card">
+                <img src="./img/pokemoneletrico.jpg" alt="Tipo Elétrico">
+                <div class="tipo-overlay">Elétrico</div>
+            </div>
+            <div class="tipo-card">
+                <img src="./img/pokemonpedra.jpg" alt="Tipo Pedra">
+                <div class="tipo-overlay">Pedra</div>
+            </div>
+        </div>
+    </div>
+    <?php endif; ?>
+
+    <?php if ($resultado !== null): ?>
+        <?php if ($resultado->num_rows > 0): ?>
+            <div class="galeria">
+                <?php while ($row = $resultado->fetch_assoc()): ?>
+                    <?php
+                        $nome = htmlspecialchars($row["nome_pokemon"]);
+                        $id = $row["id_pokemon"];
+
+                        // Corrige o caminho da imagem (se tem erro de "dowloads" e se não tem caminho)
+                        $imagem = $row["imagem_pokemon"];
+                        $imagem = str_replace("dowloads/", "downloads/", $imagem);
+
+                        // Se não tem barra no caminho, adiciona "uploads/"
+                        if (!str_contains($imagem, "/")) {
+                            $imagem = "uploads/" . $imagem;
+                        }
+
+                        // Se o arquivo não existe, usa imagem default
+                        if (!file_exists($imagem)) {
+                            $imagem = "img/default.jpg";
+                        }
+                    ?>
+                    <div class="card">
+                        <img src="<?= htmlspecialchars($imagem) ?>" alt="<?= $nome ?>" onerror="this.onerror=null;this.src='img/default.jpg';">
+                        <div class="nome-pokemon"><?= $nome ?></div>
+                        <div class="botoes">
+                            <a href="editar_pokemon.php?id=<?= $id ?>">Editar</a>
+                            <button onclick="excluirPokemon(<?= $id ?>, '<?= addslashes($nome) ?>', this.closest('.card'))">Excluir</button>
+                        </div>
+                    </div>
+                <?php endwhile; ?>
+            </div>
+        <?php else: ?>
+            <p class="nenhum-resultado">Nenhum Pokémon encontrado para "<?= htmlspecialchars($pesquisa) ?>"</p>
+        <?php endif; ?>
+    <?php endif; ?>
+
+
+    <script>
+        const inputBusca = document.getElementById("busca");
+        const sugestoes = document.getElementById("sugestoes");
+
+        inputBusca.addEventListener("input", function() {
+            const termo = inputBusca.value.trim();
+            if (termo.length === 0) {
+                sugestoes.innerHTML = "";
+                return;
+            }
+
+            fetch(`buscar_nomes.php?termo=${encodeURIComponent(termo)}`)
+                .then(res => res.json())
+                .then(data => {
+                    sugestoes.innerHTML = "";
+                    data.forEach(nome => {
+                        const div = document.createElement("div");
+                        div.textContent = nome;
+                        div.onclick = () => {
+                            inputBusca.value = nome;
+                            sugestoes.innerHTML = "";
+                        };
+                        sugestoes.appendChild(div);
+                    });
+                });
+        });
+
+        document.addEventListener("click", (e) => {
+            if (!sugestoes.contains(e.target) && e.target !== inputBusca) {
+                sugestoes.innerHTML = "";
+            }
+        });
+    </script>
+
+    <script>
+        window.onload = () => {
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        };
+    </script>
+
+</body>
+
+</html>
     <style>
         body {
             font-family: 'Segoe UI', sans-serif;
@@ -316,176 +499,3 @@ if (isset($_GET["busca"]) && !empty(trim($_GET["busca"]))) {
 }
 
     </style>
-
-    <script>
-        function excluirPokemon(id, nome, cardElement) {
-            Swal.fire({
-                title: `Deseja excluir ${nome}?`,
-                text: "Essa ação não pode ser desfeita!",
-                icon: 'warning',
-                showCancelButton: true,
-                confirmButtonColor: '#d33',
-                cancelButtonColor: '#3085d6',
-                confirmButtonText: 'Sim, excluir',
-                cancelButtonText: 'Cancelar'
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    fetch('excluir_pokemon.php', {
-                            method: 'POST',
-                            headers: {
-                                'Content-Type': 'application/x-www-form-urlencoded',
-                            },
-                            body: `id=${id}`
-                        })
-                        .then(response => response.text())
-                        .then(data => {
-                            if (data.trim() === "ok") {
-                                Swal.fire(
-                                    'Excluído!',
-                                    `${nome} foi removido com sucesso.`,
-                                    'success'
-                                );
-                                cardElement.remove(); // Remove o card da tela
-                            } else {
-                                Swal.fire('Erro!', 'Não foi possível excluir.', 'error');
-                            }
-                        });
-                }
-            });
-        }
-    </script>
-
-
-
-</head>
-
-<body>
-
-    <div class="navbar">
-        <h1>MundoPokémon</h1>
-        <div class="navbar-buttons">
-            <a href="estatistica_pokemon.php">Estatísticas</a>
-            <a href="pesquisa.php">Listar</a>
-            <a href="lista_pokemon.php">Cadastrar</a>
-        </div>
-    </div>
-
-    <div class="search-bar">
-
-        <form method="GET" action="">
-            <input type="text" name="busca" id="busca" placeholder="Pesquisar Pokémon..." autocomplete="off" value="<?= htmlspecialchars($pesquisa) ?>">
-            <button type="submit">Buscar</button>
-        </form>
-        <div class="sugestoes" id="sugestoes"></div>
-    </div>
-
-    <?php if ($resultado === null): ?>
-    <div class="intro-banner">
-        <img src="./img/pokemoninicial.jpg" alt="Banner Pokémon">
-        <div class="intro-overlay">
-            <div class="intro-text-card">
-                <h2>Bem-vindo ao Mundo Pokémon!</h2>
-                <p>Pesquise pelo nome de um Pokémon para ver detalhes, editar ou excluir. Utilize a barra acima para começar sua jornada!</p>
-            </div>
-        </div>
-    </div>
-<?php endif; ?>
-
-<?php if ($resultado === null): ?>
-<div class="tipos-container">
-    <h2>Tipos de Pokémon</h2>
-    <div class="tipos-grid">
-        <div class="tipo-card">
-            <img src="./img/pokemonfogo.jpg" alt="Tipo Fogo">
-            <div class="tipo-overlay">Fogo</div>
-        </div>
-        <div class="tipo-card">
-            <img src="./img/pokemonagua.png" alt="Tipo Água">
-            <div class="tipo-overlay">Água</div>
-        </div>
-        <div class="tipo-card">
-            <img src="./img/pokemonplanta.png" alt="Tipo Planta">
-            <div class="tipo-overlay">Planta</div>
-        </div>
-        <div class="tipo-card">
-            <img src="./img/pokemoneletrico.jpg" alt="Tipo Elétrico">
-            <div class="tipo-overlay">Elétrico</div>
-        </div>
-        <div class="tipo-card">
-            <img src="./img/pokemonpedra.jpg" alt="Tipo Pedra">
-            <div class="tipo-overlay">Pedra</div>
-        </div>
-    </div>
-</div>
-<?php endif; ?>
-
-
-
-    <?php if ($resultado !== null): ?>
-        <?php if ($resultado->num_rows > 0): ?>
-            <div class="galeria">
-                <?php while ($row = $resultado->fetch_assoc()):
-                    $nome = htmlspecialchars($row["nome_pokemon"]);
-                    $id = $row["id_pokemon"];
-                    $imagem = "imagens/" . strtolower($nome) . ".jpg";
-                ?>
-                    <div class="card">
-                        <img src="<?= $imagem ?>" alt="<?= $nome ?>" onerror="this.src='imagens/default.jpg'">
-                        <div class="nome-pokemon"><?= $nome ?></div>
-                        <div class="botoes">
-                            <a href="editar_pokemon.php?id=<?= $id ?>">Editar</a>
-                            <button onclick="excluirPokemon(<?= $id ?>, '<?= addslashes($nome) ?>', this.closest('.card'))">Excluir</button>
-
-                        </div>
-                    </div>
-                <?php endwhile; ?>
-            </div>
-        <?php else: ?>
-            <p class="nenhum-resultado">Nenhum Pokémon encontrado para "<?= htmlspecialchars($pesquisa) ?>"</p>
-        <?php endif; ?>
-    <?php endif; ?>
-
-    <script>
-        const inputBusca = document.getElementById("busca");
-        const sugestoes = document.getElementById("sugestoes");
-
-        inputBusca.addEventListener("input", function() {
-            const termo = inputBusca.value.trim();
-            if (termo.length === 0) {
-                sugestoes.innerHTML = "";
-                return;
-            }
-
-            fetch(`buscar_nomes.php?termo=${encodeURIComponent(termo)}`)
-                .then(res => res.json())
-                .then(data => {
-                    sugestoes.innerHTML = "";
-                    data.forEach(nome => {
-                        const div = document.createElement("div");
-                        div.textContent = nome;
-                        div.onclick = () => {
-                            inputBusca.value = nome;
-                            sugestoes.innerHTML = "";
-                        };
-                        sugestoes.appendChild(div);
-                    });
-                });
-        });
-
-        document.addEventListener("click", (e) => {
-            if (!sugestoes.contains(e.target) && e.target !== inputBusca) {
-                sugestoes.innerHTML = "";
-            }
-        });
-    </script>
-
-    <script>
-    window.onload = () => {
-        window.scrollTo({ top: 0, behavior: 'smooth' });
-    };
-</script>
-
-
-</body>
-
-</html>
