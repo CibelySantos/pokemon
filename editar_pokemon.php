@@ -1,5 +1,4 @@
 <?php
-// Conexão com banco de dados
 $host = "localhost";
 $user = "root";
 $pass = "";
@@ -10,7 +9,6 @@ if ($conn->connect_error) {
     die("Erro: " . $conn->connect_error);
 }
 
-// Verifica se ID foi passado
 if (!isset($_GET["id"])) {
     echo "ID do Pokémon não fornecido.";
     exit;
@@ -18,7 +16,6 @@ if (!isset($_GET["id"])) {
 
 $id = $_GET["id"];
 
-// Atualização (se enviado)
 if ($_SERVER["REQUEST_METHOD"] === "POST") {
     $nome = $_POST["nome_pokemon"];
     $tipo = $_POST["tipo_pokemon"];
@@ -31,8 +28,8 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
     $stmt->bind_param("ssssssi", $nome, $tipo, $localizacao, $data, $hp_atk_def, $obs, $id);
 
     if ($stmt->execute()) {
-        echo "<p>✅ Pokémon atualizado com sucesso!</p>";
-        echo "<p><a href='listar_pokemon.php'>Voltar para listagem</a></p>";
+        echo "<h2> Pokémon atualizado com sucesso!</h2>";
+        echo "<p><a href='index.php'>Voltar</a></p>";
         exit;
     } else {
         echo "Erro ao atualizar: " . $stmt->error;
@@ -58,10 +55,12 @@ $row = $result->fetch_assoc();
 <head>
     <meta charset="UTF-8">
     <title>Editar Pokémon</title>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
     <style>
         body {
             font-family: Arial, sans-serif;
-            background: #f8f8f8;
+            background:  #ffcb05;
             padding: 40px;
         }
         form {
@@ -85,7 +84,7 @@ $row = $result->fetch_assoc();
             width: 100%;
             padding: 10px;
             border-radius: 6px;
-            border: 1px solid #ccc;
+            border: 1px solid  #2a75bb;
             margin-top: 5px;
         }
         button {

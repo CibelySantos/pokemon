@@ -1,5 +1,4 @@
 <?php
-// Conexão
 $host = "localhost";
 $user = "root";
 $pass = "";
@@ -32,7 +31,7 @@ if (isset($_GET["busca"]) && !empty(trim($_GET["busca"]))) {
             font-family: 'Segoe UI', sans-serif;
             margin: 0;
             padding: 0;
-            background: #f2f2f2;
+            background:rgb(239, 239, 234);
         }
 
         .navbar {
@@ -40,7 +39,7 @@ if (isset($_GET["busca"]) && !empty(trim($_GET["busca"]))) {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 15px 20px;
+            padding: 25px 38px;
         }
 
         .navbar h1 {
@@ -58,7 +57,7 @@ if (isset($_GET["busca"]) && !empty(trim($_GET["busca"]))) {
         .navbar-buttons a {
             text-decoration: none;
             color: #2a75bb;
-            font-weight: bold;
+            font-weight:bolder ;
             font-size: 16px;
             padding-top: 5px;
         }
@@ -200,6 +199,122 @@ if (isset($_GET["busca"]) && !empty(trim($_GET["busca"]))) {
             cursor: pointer;
             font-size: 14px;
         }
+.intro-banner {
+    position: relative;
+    width: 100%;
+    overflow: hidden;
+}
+
+.intro-banner img {
+    width: 100%;
+    height: 350px;
+    object-fit: cover;
+    display: block;
+}
+
+.intro-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 20px;
+    box-sizing: border-box;
+}
+
+.intro-text-card {
+    background: rgba(255, 255, 255, 0.95);
+    padding: 30px 40px;
+    border-radius: 16px;
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.2);
+    max-width: 600px;
+    text-align: center;
+    color: #333;
+}
+
+.intro-text-card h2 {
+    color: #2a75bb;
+    margin-top: 0;
+    font-size: 28px;
+    margin-bottom: 15px;
+}
+
+@media (max-width: 768px) {
+    .intro-banner img {
+        height: 250px;
+    }
+
+    .intro-text-card {
+        padding: 20px;
+        font-size: 15px;
+    }
+
+    .intro-text-card h2 {
+        font-size: 22px;
+    }
+}
+
+.tipos-container {
+    padding: 50px 30px;
+    background-color: #fff;
+    text-align: center;
+}
+
+.tipos-container h2 {
+    color: #2a75bb;
+    font-size: 26px;
+    margin-bottom: 30px;
+}
+
+.tipos-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    gap: 20px;
+    justify-items: center;
+}
+
+.tipo-card {
+    position: relative;
+    width: 160px;
+    height: 160px;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+    cursor: pointer;
+}
+
+.tipo-card img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.3s ease;
+}
+
+.tipo-card:hover img {
+    transform: scale(1.1);
+}
+
+.tipo-overlay {
+    position: absolute;
+    bottom: 0;
+    background: rgba(0,0,0,0.6);
+    color: #fff;
+    width: 100%;
+    text-align: center;
+    padding: 10px 0;
+    font-weight: bold;
+    font-size: 16px;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.tipo-card:hover .tipo-overlay {
+    opacity: 1;
+}
+
     </style>
 
     <script>
@@ -247,7 +362,7 @@ if (isset($_GET["busca"]) && !empty(trim($_GET["busca"]))) {
 <body>
 
     <div class="navbar">
-        <h1>Pokemon</h1>
+        <h1>MundoPokémon</h1>
         <div class="navbar-buttons">
             <a href="estatistica_pokemon.php">Estatísticas</a>
             <a href="pesquisa.php">Listar</a>
@@ -256,12 +371,55 @@ if (isset($_GET["busca"]) && !empty(trim($_GET["busca"]))) {
     </div>
 
     <div class="search-bar">
+
         <form method="GET" action="">
             <input type="text" name="busca" id="busca" placeholder="Pesquisar Pokémon..." autocomplete="off" value="<?= htmlspecialchars($pesquisa) ?>">
             <button type="submit">Buscar</button>
         </form>
         <div class="sugestoes" id="sugestoes"></div>
     </div>
+
+    <?php if ($resultado === null): ?>
+    <div class="intro-banner">
+        <img src="./img/pokemoninicial.jpg" alt="Banner Pokémon">
+        <div class="intro-overlay">
+            <div class="intro-text-card">
+                <h2>Bem-vindo ao Mundo Pokémon!</h2>
+                <p>Pesquise pelo nome de um Pokémon para ver detalhes, editar ou excluir. Utilize a barra acima para começar sua jornada!</p>
+            </div>
+        </div>
+    </div>
+<?php endif; ?>
+
+<?php if ($resultado === null): ?>
+<div class="tipos-container">
+    <h2>Tipos de Pokémon</h2>
+    <div class="tipos-grid">
+        <div class="tipo-card">
+            <img src="./img/pokemonfogo.jpg" alt="Tipo Fogo">
+            <div class="tipo-overlay">Fogo</div>
+        </div>
+        <div class="tipo-card">
+            <img src="./img/pokemonagua.png" alt="Tipo Água">
+            <div class="tipo-overlay">Água</div>
+        </div>
+        <div class="tipo-card">
+            <img src="./img/pokemonplanta.png" alt="Tipo Planta">
+            <div class="tipo-overlay">Planta</div>
+        </div>
+        <div class="tipo-card">
+            <img src="./img/pokemoneletrico.jpg" alt="Tipo Elétrico">
+            <div class="tipo-overlay">Elétrico</div>
+        </div>
+        <div class="tipo-card">
+            <img src="./img/pokemonpedra.jpg" alt="Tipo Pedra">
+            <div class="tipo-overlay">Pedra</div>
+        </div>
+    </div>
+</div>
+<?php endif; ?>
+
+
 
     <?php if ($resultado !== null): ?>
         <?php if ($resultado->num_rows > 0): ?>
@@ -320,6 +478,13 @@ if (isset($_GET["busca"]) && !empty(trim($_GET["busca"]))) {
             }
         });
     </script>
+
+    <script>
+    window.onload = () => {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    };
+</script>
+
 
 </body>
 
